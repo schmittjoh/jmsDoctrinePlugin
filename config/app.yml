@@ -1,0 +1,15 @@
+all:
+  jmsDoctrinePlugin:
+    ######## General Section 
+    # project specific salt (do NOT change on running system)
+    salt: null
+  
+    ######## Passwordable Section 
+    # minimum for model generated salts (do NOT change on running system)
+    minSaltLength: 10
+    
+    # maximum for model generated salts (do NOT change on running system)
+    maxSaltLength: 30
+    
+    # algorithms to use ordered by preference descending
+    algorithms: [sha512, whirlpool, sha384, sha256, 'haval256,5', 'tiger192,4',  sha1, md5]

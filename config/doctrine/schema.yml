@@ -1,0 +1,40 @@
+options:
+  type:         InnoDB
+  charset:      utf8
+  collate:      utf8_unicode_ci
+
+BlameableLogEntry:
+  tableName: blameable_log
+  actAs:
+    Timestampable:
+      updated:
+        disabled: true
+  columns:
+    id:
+      type: integer(11)
+      primary: true
+      unsigned: true
+      notnull: true
+      autoincrement: true
+    target_entity_id:
+      type: integer(11)
+      unsigned: true
+      notnull: false
+    target_entity_type:
+      type: string(50)
+      notnull: false
+    issuer_entity_id:
+      type: integer(11)
+      unsigned: true
+      notnull: false
+    issuer_entity_type:
+      type: string(50)
+      notnull: false
+    visibility:
+      type: enum
+      comment: public = any body can see this message, even customers; restricted = intern; confidential = admin; secret = super_admin; top_secret = iddqd
+      values: [public, restricted, confidential, secret, top_secret]
+    message:
+      type: string(50)
+      notnull: true
+    variables: array
