@@ -201,13 +201,12 @@ class Passwordable extends Doctrine_Template
       
     // check if model has a method with the algorithm's name
     $r = $this->getInvoker();
-    if (is_callable(array($r, $algorithm)))
-    {
+    try {
       for ($i=0;$i<$times;$i++)
         $string = $r->$algorithm($string);
       
       return $string;
-    }
+    } catch (Exception $e) {}
       
     // check if there is a function with the algorithm's name
     if (function_exists($algorithm))
@@ -277,7 +276,7 @@ class Passwordable extends Doctrine_Template
   
   /**
    * Generates a random string. Several different algorithms are used to try to
-   * get a cryptographically strong, actually random result.
+   * get a cryptographically strong, and actually random result.
    * 
    * @param int $length The length of the generated string.
    * @return string The generated string.
