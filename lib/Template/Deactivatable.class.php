@@ -80,7 +80,7 @@ class Deactivatable extends Doctrine_Template
   }
   
   /**
-   * Activates the record, and immediately saves it
+   * Activates the record
    */
   public function activate()
   {
@@ -90,8 +90,8 @@ class Deactivatable extends Doctrine_Template
   }
   
   /**
-   * Deactivates the record, and immediately saves the changes. See above, for 
-   * which values of $until, and $from have which effect.
+   * Deactivates the record. See above, for which values of $until, and $from
+   *  have which effect, or use the deactivate*() alias methods.
    * 
    * @param DateTime $until
    * @param DateTime $from
