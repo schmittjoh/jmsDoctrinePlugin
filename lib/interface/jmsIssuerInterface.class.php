@@ -29,11 +29,11 @@
  */
 interface jmsIssuerInterface
 {
-	/**
-	 * Returns a key/value pair array uniquely identifying this instance of the
-	 * given object.
-	 * 
-	 * @return array
-	 */
-	public function identifier();
+  /**
+   * Returns a key/value pair array uniquely identifying this instance of the
+   * given object.
+   * 
+   * @return array
+   */
+  public function identifier();
 }

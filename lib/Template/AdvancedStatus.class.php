@@ -21,14 +21,13 @@
  * @package jmsDoctrinePlugin
  * @subpackage Template
  * @author Johannes M. Schmitt <schmittjoh@gmail.com>
- * TODO: Incorporate information about Lockable template once that is open 
- *       sourced
  */
 class AdvancedStatus extends Doctrine_Template
 {
   const ACTIVE = 1;
   const DELETED = 2;
   const DEACTIVATED = 3;
+  const LOCKED = 4;
   
   /**
    * Returns the status of this record based on the templates that are
@@ -46,6 +45,9 @@ class AdvancedStatus extends Doctrine_Template
     
     if ($t->hasTemplate('Deactivatable') && $r->isDeactivated())
       return self::DEACTIVATED;
+      
+    if ($t->hasTemplate('Lockable') && $r->isLocked())
+      return self::LOCKED;      
       
     return self::ACTIVE;    
   }  
