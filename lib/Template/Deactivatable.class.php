@@ -87,7 +87,6 @@ class Deactivatable extends Doctrine_Template
     $r = $this->getInvoker();
     $r->{$this->_options['from']['name']} = null;
     $r->{$this->_options['until']['name']} = null;
-    $r->save();   
   }
   
   /**
@@ -110,7 +109,53 @@ class Deactivatable extends Doctrine_Template
                                                   null : $from->format('Y-m-d H:i:s');
     $record->{$this->_options['until']['name']} = $until === null? 
                                                   null : $until->format('Y-m-d H:i:s');
-    $record->save();
+  }
+  
+  /**
+   * Deactivates the record except for the given period of time when it is
+   * activated.
+   * 
+   * @param DateTime $start
+   * @param DateTime $end This is not included in the deactivated period
+   * @return void
+   */
+  public function deactivateForeverExcept(DateTime $start, DateTime $end)
+  {
+  	$this->deactivate($start, $end);
+  }
+  
+  /** 
+   * Deactivates the record from the given starting date on.
+   * 
+   * @param DateTime $from
+   * @return void
+   */
+  public function deactivateFrom(DateTime $from)
+  {
+  	$this->deactivate(null, $from);
+  }
+  
+  /**
+   * Deactivates the record until the given end date.
+   * 
+   * @param DateTime $until
+   * @return void
+   */
+  public function deactivateUntil(DateTime $until)
+  {
+  	$this->deactivate($until);
+  }
+  
+  /**
+   * Deactivates the record during the given period.
+   * 
+   * @param DateTime $from
+   * @param DateTime $until
+   * @return void
+   */
+  public function deactivateDuring(DateTime $from, DateTime $until)
+  {
+  	$this->deactivate($until, $from);
   }
   
   /**
@@ -126,23 +171,23 @@ class Deactivatable extends Doctrine_Template
       $refTime = new DateTime();
     
     $record = $this->getInvoker();
-    $from = $this->_options['from']['name'];
-    $until = $this->_options['until']['name'];
+    $from = strtotime($record->{$this->_options['from']['name']});
+    $until = strtotime($record->{$this->_options['until']['name']});
     
     // check if this record is deactivated sometime
     if ($this->isDeactivatedSometime() === false)
       return false;
     
-    // check if the deactivated starts in the future
-    if ($record->$from !== null && strtotime($record->$from) > $refTime->getTimestamp())
-      return false;
-    
-    // so, it's deactivated forever
-    if ($record->$until === null)
-      return true;
-    
-    // check if the deactivation has already expired
-    return strtotime($record->$until) > $refTime->getTimestamp();
+    if ($this->isDeactivatedTemporarily())
+    {
+    	return ($from === false || $from <= $refTime->getTimestamp())
+    	       && $until > $refTime->getTimestamp();
+    }
+    else
+    {
+    	return ($until !== false && $until > $refTime->getTimestamp())
+    	       || $from <= $refTime->getTimestamp();
+    }
   }
   
   /**
@@ -217,7 +262,9 @@ class Deactivatable extends Doctrine_Template
   }
   
   /**
-   * Returns the activated period if the record is deactivated permanently.
+   * Returns the activated period if the record is deactivated permanently. On
+   * the last day of the returned DatePeriod, the record is still deactivated.
+   * 
    * @return DatePeriod
    */
   public function getActivatedPeriod()
@@ -226,9 +273,11 @@ class Deactivatable extends Doctrine_Template
       throw new LogicException('The record is not deactivated permanently, and therefore has no finite, active period.');
     
     $invoker = $this->getInvoker();
+    $until = $invoker->{$this->_options['until']['name']} === null?
+              'today' : $invoker->{$this->_options['until']['name']};
     
     return new DatePeriod(
-      new DateTime($invoker->{$this->_options['until']['name']}),
+      new DateTime($until),
       new DateInterval('P1D'),
       new DateTime($invoker->{$this->_options['from']['name']})
     );
