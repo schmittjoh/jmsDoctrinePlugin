@@ -94,6 +94,8 @@ class Locatable extends Doctrine_Template_Geographical
    */
   public function setTableDefinition()
   {
+    parent::setTableDefinition();
+    
     $this->hasColumn(
       $this->_options['x_coordinate']['name'], 
       $this->_options['x_coordinate']['type'], 
@@ -131,6 +133,8 @@ class Locatable extends Doctrine_Template_Geographical
    */
   public function setUp()
   {
+    parent::setUp();
+    
     if (($listener = $this->_options['listener']) !== false)
       $this->addListener(new $listener($this->_options));
   }

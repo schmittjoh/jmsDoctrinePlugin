@@ -179,7 +179,7 @@ class Addressable extends Doctrine_Template
    */
   public function setAddress($addressLine)
   {
-    $this->calculateAccuracy($addressLine, true);
+    $this->geocodeAddress($addressLine, true);
   }
   
   /**
