@@ -121,6 +121,8 @@ class Addressable extends Doctrine_Template
     // you can set the listener to false, if you do not want to determine the
     // accuracy of the address
     'listener' => 'AddressableListener',
+    // in this case the address is normalized after it has been geocoded
+    'normalize_address' => false,
   );
   
   /**
@@ -166,6 +168,18 @@ class Addressable extends Doctrine_Template
     return $record->{$this->_options['address']['thoroughfare']['name']} !== null 
            && $record->{$this->_options['address']['locality']['name']} !== null
            && $record->{$this->_options['address']['country_code']['name']} !== null;
+  }
+  
+  /**
+   * Sets an address. Basically, address can be anything that can be mapped to
+   * a valid address by Google.
+   * 
+   * @param string $addressLine
+   * @return void
+   */
+  public function setAddress($addressLine)
+  {
+    $this->calculateAccuracy($addressLine, true);
   }
   
   /**
@@ -248,10 +262,18 @@ class Addressable extends Doctrine_Template
    */
   public function calculateAccuracy()
   {
+    $this->geocodeAddress($this->getAddressLine(), $this->getOption('normalize_address', false));
+  }
+  
+  /**
+   * Uses Google Geocoding to calculate accuracy, and normalize the address
+   * 
+   * @param string $addressLine
+   * @param boolean $normalizeAddress
+   */
+  private function geocodeAddress($addressLine, $normalizeAddress = false)
+  {
     $invoker = $this->getInvoker();
-    
-    if (!$this->hasAddress())
-      return;
     
     $json = json_decode(file_get_contents(
       'http://maps.google.com/maps/api/geocode/json'
@@ -270,6 +292,35 @@ class Addressable extends Doctrine_Template
         
       $invoker->{$this->_options['accuracy']['name']} = constant($accuracyConstant);
       
+      // normalize address
+      if ($normalizeAddress)
+      {
+        foreach ($address['address_components'] as $addressComponent)
+        {
+          if (in_array('locality', $addressComponent['types']))
+          {
+            $invoker->{$this->_options['address']['locality']['name']} = $addressComponent['long_name'];
+          }
+          if (in_array('country', $addressComponent['types']))
+          {
+            $invoker->{$this->_options['address']['country_code']['name']} = $addressComponent['short_name'];
+          }
+          if (in_array('street_number', $addressComponent['types']))
+          {
+            $invoker->{$this->_options['address']['thoroughfare_number']['name']} = $addressComponent['long_name'];
+          }
+          if (in_array('route', $addressComponent['types']))
+          {
+            $invoker->{$this->_options['address']['thoroughfare']['name']} = $addressComponent['long_name'];
+          }
+          if (in_array('postal_code', $addressComponent['types']))
+          {
+            $invoker->{$this->_options['address']['postal_code']['name']} = $addressComponent['long_name'];
+          }
+        }
+      }
+      
+      // update coordinates
       if ($invoker->getTable()->hasTemplate('Locatable'))
         $invoker->setCoordinates(
           $address['geometry']['location']['lat'],
