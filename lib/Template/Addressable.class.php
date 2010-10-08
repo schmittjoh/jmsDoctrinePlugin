@@ -277,7 +277,7 @@ class Addressable extends Doctrine_Template
     
     $json = json_decode(file_get_contents(
       'http://maps.google.com/maps/api/geocode/json'
-      .'?address='.urlencode($this->getAddressLine())
+      .'?address='.urlencode($addressLine)
       .'&sensor=false'
     ), true);
 
